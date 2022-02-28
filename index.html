@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Cropper.js</title>
+  <link rel="stylesheet" href="./css/cropper.css">
+  <style>
+  .container1{
+width: 400px;
+height: 225px;
+display: flex;
+justify-content: center;
+align-items: center;
+flex-direction: column;
+gap: 10px;
+border: 1px solid black;
+}
+
+#display_image{
+width: 300px;
+height: 169px;
+border: 1px solid black;
+background-position: center;
+background-size: cover;
+}
+    .container {
+      margin: 20px auto;
+      max-width: 640px;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    .cropper-view-box,
+    .cropper-face {
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+        <div class="container">
+            <h1>Crop a round image</h1>
+            <h3>Image</h3>
+
+      <div class="container1">
+        <input type="file" id="image_input" accept="image/jpg">
+        <img id="display_image"></img>
+      </div>
+
+    <div>
+      <img id="flag" src="./flag.jpg" alt="Picture">
+      <img id="image" src="https://pbs.twimg.com/profile_images/1498142386291159042/b_-dUjsh_400x400.png" crossorigin>
+    </div>
+    <h3>Result</h3>
+    <p>
+      <button type="button" id="button">Crop</button>
+    </p>
+    <div id="result"></div>
+    <canvas id="export" width="400" height="400" style=""></canvas>
+  </div>
+  <script src="cropper.js"></script>
+  <script>
+
+  const image_input = document.querySelector("#image_input");
+
+image_input.addEventListener("change", function () {
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    const uploaded_image = reader.result;
+    document.getElementById('display_image').src = `url(${uploaded_image})`;
+  });
+  reader.readAsDataURL(this.files[0]);
+});
+    function getRoundedCanvas(sourceCanvas) {
+      var canvas = document.createElement('canvas');
+      var context = canvas.getContext('2d');
+      // var width = sourceCanvas.width;
+      // var height = sourceCanvas.height;
+      var width = '362';
+      var height = '362';
+
+      // canvas.width = width;
+      // canvas.height = height;
+      canvas.width = '400';
+      canvas.height = '400';
+      context.imageSmoothingEnabled = true;
+      context.drawImage(sourceCanvas, 0, 0, width, height);
+      context.globalCompositeOperation = 'destination-in';
+      context.beginPath();
+      context.arc(width / 2, height / 2, Math.min(width, height) / 2, 0, 2 * Math.PI, true);
+      context.fill();
+      return canvas;
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      var image =  document.getElementById('image');
+      var button = document.getElementById('button');
+      var result = document.getElementById('result');
+      var croppable = false;
+      var cropper = new Cropper(image, {
+        aspectRatio: 1,
+        viewMode: 1,
+        ready: function () {
+          croppable = true;
+        },
+      });
+
+      button.onclick = function () {
+        var flag = document.getElementById('flag');
+        var croppedCanvas;
+        var roundedCanvas;
+        var roundedImage;
+
+        var expcanvas = document.getElementById('export');
+        var expcontext = expcanvas.getContext('2d');
+        expcanvas.width = '400';
+        expcanvas.height = '400';
+
+        if (!croppable) {
+          return;
+        }
+
+        // Crop
+        croppedCanvas = cropper.getCroppedCanvas();
+
+        // Round
+        roundedCanvas = getRoundedCanvas(croppedCanvas);
+
+        // Show
+        roundedImage = document.createElement('img');
+        roundedImage.src = roundedCanvas.toDataURL()
+
+
+        result.innerHTML = '';
+        result.appendChild(roundedImage);
+        // result.appendChild(flag);
+        expcontext.drawImage(flag, 0, 0);
+        expcontext.drawImage(roundedImage, 19, 19);
+      };
+    });
+  </script>
+</body>
+</html>
